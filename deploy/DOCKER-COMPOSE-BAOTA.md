@@ -1,6 +1,6 @@
-# WorkDSH Admin 部署手册：Docker Compose + 宝塔 HTTPS
+# 三云Buddy 企业管理后台部署手册：Docker Compose + 宝塔 HTTPS
 
-本次部署以独立的 WorkDSH Admin 为企业后台，使用 PostgreSQL。宝塔 Nginx 在 HTTPS 域名的 443 端口接收请求，转发到同机 `127.0.0.1:18890`；Compose 内的 `admin` 连接未对宿主机发布端口的 `db`。员工的 Agent 和工具仍在 Desktop 本机运行。
+本次部署以独立的三云Buddy 企业管理后台为企业服务端，使用 PostgreSQL。宝塔 Nginx 在 HTTPS 域名的 443 端口接收请求，转发到同机 `127.0.0.1:18890`；Compose 内的 `admin` 连接未对宿主机发布端口的 `db`。员工的 Agent 和工具仍在 Desktop 本机运行。
 
 > 本文使用 `admin.example.com` 等示例。实际域名、服务器信息、账号、密码、模型 Key 和证书私钥不写入仓库。旧的 IP + 8443 临时入口不属于这套部署。
 
@@ -81,7 +81,7 @@ networks:
 
 - `secrets/` 放在服务器部署目录下，由 root 管理（目录 `0700`、文件 `0600`），不复制进 Git 或安装包。校验用 `docker compose config --quiet`，不要打印展开后的配置。
 - `secrets/postgres.env`：`POSTGRES_DB` 使用 `workdsh_admin`；配置独立的维护账号 `POSTGRES_USER` 和随机 `POSTGRES_PASSWORD`。这些是新数据库卷的初始化设置，不是以后改数据库密码的办法。
-- `secrets/admin.env`：`JDBC_PASSWORD` 为运行角色 `workdsh_app` 的独立密码；`WORKDSH_BOOTSTRAP_ADMIN_EMAIL` 和 `WORKDSH_BOOTSTRAP_ADMIN_PASSWORD` 为首次初始化的企业所有者凭据（密码至少 12 位）；`WORKDSH_ORGANIZATION_NAME` 可选。另配置 `WORKDSH_SECRETS_ENCRYPTION_KEY`（32 个随机字节的 Base64）及独立的 `WORKDSH_SECRETS_SERVICE_KEY`。保管好加密密钥，恢复时不能用随意生成的新密钥替代。
+- `secrets/admin.env`：`JDBC_PASSWORD` 为运行角色 `workdsh_app` 的独立密码；`WORKDSH_BOOTSTRAP_ADMIN_EMAIL` 和 `WORKDSH_BOOTSTRAP_ADMIN_PASSWORD` 为首次初始化的企业所有者凭据（密码至少 12 位）；`WORKDSH_ORGANIZATION_NAME` 可选，仅用于新库，默认 `三云Buddy 企业`；升级保留已保存的企业名称。另配置 `WORKDSH_SECRETS_ENCRYPTION_KEY`（32 个随机字节的 Base64）及独立的 `WORKDSH_SECRETS_SERVICE_KEY`。保管好加密密钥，恢复时不能用随意生成的新密钥替代。
 
 ## 3. 初始化 PostgreSQL，再启动 Admin
 

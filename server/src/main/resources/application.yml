@@ -19,7 +19,7 @@ workdsh:
   bootstrap:
     admin-email: ${WORKDSH_BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${WORKDSH_BOOTSTRAP_ADMIN_PASSWORD:}
-    organization-name: ${WORKDSH_ORGANIZATION_NAME:WorkDSH 企业}
+    organization-name: ${WORKDSH_ORGANIZATION_NAME:三云Buddy 企业}
 
 
   secrets:

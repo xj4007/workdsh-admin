@@ -37,7 +37,7 @@ public class AuthService {
     ApplicationRunner bootstrap(
             @Value("${workdsh.bootstrap.admin-email:}") String email,
             @Value("${workdsh.bootstrap.admin-password:}") String password,
-            @Value("${workdsh.bootstrap.organization-name:WorkDSH 企业}") String orgName) {
+            @Value("${workdsh.bootstrap.organization-name:三云Buddy 企业}") String orgName) {
         return args -> {
             Long count = db.queryForObject("select count(*) from organizations", Long.class);
             if (count != null && count > 0) return;

@@ -43,6 +43,12 @@ def smoke(java, jar, web, log):
             assert request('/api/auth/me')[0] == 401
             status, page = request('/')
             assert status == 200 and b'<html' in page.lower(), 'Packaged frontend was not served'
+            html = page.decode('utf-8')
+            assert '<title>三云Buddy 企业管理</title>' in html and 'href="/sanyun-buddy.png"' in html
+            status, icon = request('/sanyun-buddy.png')
+            assert status == 200 and icon.startswith(b'\x89PNG\r\n\x1a\n'), 'Packaged brand icon was not served'
+            status, organization = request('/api/admin/organization', authorization=authorization)
+            assert status == 200 and json.loads(organization)['name'] == '三云Buddy 企业'
             status, account = request('/api/auth/me', authorization=authorization)
             assert status == 200 and json.loads(account)['email'] == email
             assert request('/api/admin/members', authorization=authorization)[0] == 200
