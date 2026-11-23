@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import ArcoVue from '@arco-design/web-vue'
 import '@arco-design/web-vue/dist/arco.css'
-import App from './App.vue'
+import Root from './Root.vue'
 import './style.css'
 
-createApp(App).use(ArcoVue).mount('#app')
+createApp(Root).use(ArcoVue).mount('#app')

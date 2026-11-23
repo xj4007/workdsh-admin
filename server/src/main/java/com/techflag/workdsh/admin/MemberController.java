@@ -22,8 +22,13 @@ import org.springframework.web.server.ResponseStatusException;
 public class MemberController {
     private final JdbcTemplate db;
     private final AuthService auth;
+    private final AccountSpaces accounts;
 
-    public MemberController(JdbcTemplate db, AuthService auth) { this.db = db; this.auth = auth; }
+    public MemberController(JdbcTemplate db, AuthService auth, AccountSpaces accounts) {
+        this.db = db;
+        this.auth = auth;
+        this.accounts = accounts;
+    }
 
     public record Member(String id, String email, String displayName, String role, boolean active,
                          boolean mustChangePassword, int revision) {}
@@ -61,17 +66,30 @@ public class MemberController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
         }
         if (request.role().equals("ADMIN") && !actor.role().equals("OWNER")) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only owner may appoint admins");
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        Long account = db.queryForObject("select count(*) from accounts where email=?", Long.class, email);
+        if (account != null && account > 0) {
+            Long linked = db.queryForObject("""
+                    select count(*) from account_spaces s join accounts a on a.id=s.account_id
+                    where a.email=? and s.kind='ENTERPRISE'
+                    """, Long.class, email);
+            if (linked != null && linked > 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Email already belongs to another enterprise member");
+            }
+        }
         String id = UUID.randomUUID().toString();
         String temporaryPassword = auth.newTemporaryPassword();
         try {
             db.update("insert into members(id,organization_id,email,display_name,role,password_hash,must_change_password,active,revision) values (?,?,?,?,?,?,true,true,1)",
-                    id, actor.organizationId(), request.email().trim().toLowerCase(Locale.ROOT),
+                    id, actor.organizationId(), email,
                     request.displayName().trim(), request.role(), auth.encode(temporaryPassword));
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Member email already exists");
         }
+        accounts.linkMember(id);
         audit(actor, "member.created", id);
-        return new CreatedMember(new Member(id, request.email().trim().toLowerCase(Locale.ROOT),
+        return new CreatedMember(new Member(id, email,
                 request.displayName().trim(), request.role(), true, true, 1), temporaryPassword);
     }
 
@@ -98,8 +116,13 @@ public class MemberController {
         int changed = db.update("update members set role=?,active=?,revision=revision+1 where id=? and organization_id=? and revision=?",
                 role, active, id, actor.organizationId(), change.expectedRevision());
         if (changed != 1) throw new ResponseStatusException(HttpStatus.CONFLICT, "Member changed; refresh first");
+        db.update("update account_spaces set role=?,active=? where member_id=?", role, active, id);
         if (!active) {
             db.update("delete from auth_sessions where member_id=?", id);
+            db.update("""
+                    delete from account_sessions where space_id in
+                    (select id from account_spaces where member_id=? and kind='ENTERPRISE')
+                    """, id);
         }
         audit(actor, active ? "member.updated" : "member.disabled", id);
         return member(actor.organizationId(), id);

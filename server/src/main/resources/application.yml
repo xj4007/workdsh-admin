@@ -20,6 +20,13 @@ workdsh:
     admin-email: ${WORKDSH_BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${WORKDSH_BOOTSTRAP_ADMIN_PASSWORD:}
     organization-name: ${WORKDSH_ORGANIZATION_NAME:三云Buddy 企业}
+  accounts:
+    registration-enabled: ${WORKDSH_ACCOUNTS_REGISTRATION_ENABLED:true}
+    expose-verification-code: ${WORKDSH_ACCOUNTS_EXPOSE_VERIFICATION_CODE:false}
+    trial-credits-units: ${WORKDSH_ACCOUNTS_TRIAL_CREDITS_UNITS:500000}
+  platform:
+    bootstrap-admin-email: ${WORKDSH_PLATFORM_ADMIN_EMAIL:}
+    bootstrap-admin-password: ${WORKDSH_PLATFORM_ADMIN_PASSWORD:}
 
 
   secrets:
