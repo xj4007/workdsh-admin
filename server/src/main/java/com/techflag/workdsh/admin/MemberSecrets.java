@@ -100,6 +100,13 @@ public class MemberSecrets {
  String cryptOrganizationModel(boolean encrypt,String organizationId,String value) {
   return crypt(encrypt,"organization-model\n"+organizationId,value);
  }
+ /** Platform vendor credentials are bound to the catalog entry, never to an organization. */
+ public String encryptPlatformSecret(String reference,String value) {
+  return crypt(true,"platform\n"+reference,value);
+ }
+ public String decryptPlatformSecret(String reference,String value) {
+  return crypt(false,"platform\n"+reference,value);
+ }
  private String crypt(boolean encrypt,String aad,String value) {
   byte[] key;
   try {key=Base64.getDecoder().decode(configuredKey);if(key.length!=32)throw new IllegalArgumentException();}

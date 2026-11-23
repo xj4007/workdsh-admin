@@ -37,7 +37,7 @@ public class BrowserSessionFilter extends OncePerRequestFilter {
                 if (COOKIE_NAME.equals(cookie.getName())) { token = cookie.getValue(); break; }
             }
         }
-        boolean browserLogin = path.equals("/api/auth/browser-login");
+        boolean browserLogin = path.endsWith("/browser-login");
         if (browserLogin || token != null) {
             String site = request.getHeader("Sec-Fetch-Site");
             if ("cross-site".equals(site)) { response.sendError(403); return; }
@@ -65,6 +65,12 @@ public class BrowserSessionFilter extends OncePerRequestFilter {
                 return Collections.enumeration(names);
             }
         }, response);
+    }
+
+    /** HttpOnly browser session cookie shared by the enterprise and account login endpoints. */
+    public static String sessionCookie(String token, int maxAge, boolean secure) {
+        return COOKIE_NAME + "=" + token + "; Path=/api; Max-Age=" + maxAge
+                + "; HttpOnly; SameSite=Strict" + (secure ? "; Secure" : "");
     }
 
     private static boolean isRead(String method) { return method.equals("GET") || method.equals("HEAD"); }

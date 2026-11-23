@@ -57,7 +57,6 @@ public class AuthController {
     }
 
     private String cookie(String token, int maxAge) {
-        return BrowserSessionFilter.COOKIE_NAME + "=" + token + "; Path=/api; Max-Age=" + maxAge
-                + "; HttpOnly; SameSite=Strict" + (secureCookie ? "; Secure" : "");
+        return BrowserSessionFilter.sessionCookie(token, maxAge, secureCookie);
     }
 }
